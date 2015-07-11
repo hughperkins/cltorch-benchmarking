@@ -1,93 +1,53 @@
-5500:
-user@pear:~/git/machinelearning/prototyping/opencl/benchmarking/build$ ./test_launch 0
+Intel HD5500:
+$ ./test_launch 0
 using gpu 0
 Using Intel platform: Intel Gen OCL Driver
 Using device: Intel(R) HD Graphics BroadWell U-Processor GT2
-in[10]15
 totalN 104857600 launches 1 N per launch 104857600 time=309.047ms
-in[10]15
 totalN 104857600 launches 2 N per launch 52428800 time=299.502ms
-in[10]15
 totalN 104857600 launches 4 N per launch 26214400 time=332.237ms
-in[10]15
 totalN 104857600 launches 8 N per launch 13107200 time=414.466ms
-in[10]15
 totalN 104857600 launches 16 N per launch 6553600 time=358.386ms
-in[10]15
 totalN 104857600 launches 32 N per launch 3276800 time=324.356ms
-in[10]15
 totalN 104857600 launches 64 N per launch 1638400 time=304.208ms
-in[10]15
 totalN 104857600 launches 128 N per launch 819200 time=294.998ms
-in[10]15
 totalN 104857600 launches 256 N per launch 409600 time=249.688ms
-in[10]15
 totalN 104857600 launches 512 N per launch 204800 time=330.421ms
-in[10]15
 totalN 104857600 launches 1024 N per launch 102400 time=356.834ms
-in[10]15
 totalN 104857600 launches 2048 N per launch 51200 time=292.45ms
-in[10]15
 totalN 104857600 launches 4096 N per launch 25600 time=342.783ms
-in[10]15
 totalN 104857600 launches 8192 N per launch 12800 time=435.122ms
-in[10]15
 totalN 104857600 launches 16384 N per launch 6400 time=621.56ms
-in[10]15
 totalN 104857600 launches 32768 N per launch 3200 time=1030.23ms
-in[10]15
 totalN 104857600 launches 65536 N per launch 1600 time=1856.22ms
-in[10]15
 totalN 104857600 launches 131072 N per launch 800 time=3405.57ms
-in[10]15
 totalN 104857600 launches 262144 N per launch 400 time=6558.8ms
-user@pear:~/git/machinelearning/prototyping/opencl/benchmarking/build$ wcalc "(1840-300)/65536"
- = 0.0228882
-user@pear:~/git/machinelearning/prototyping/opencl/benchmarking/build$ wcalc "300 + 0.0228882 * 32768"
- = 1050
+$ wcalc "(1840-300)/65536"
+ = 23 microseconds
 
 
 nvidia 940M:
-user@pear:~/git/machinelearning/prototyping/opencl/benchmarking/build$ ./test_launch 1
+$ ./test_launch 1
 Using NVIDIA Corporation platform: NVIDIA CUDA
 Using device: GeForce 940M
-in[10]15
 totalN 104857600 launches 1 N per launch 104857600 time=596.462ms
-in[10]15
 totalN 104857600 launches 2 N per launch 52428800 time=596.37ms
-in[10]15
 totalN 104857600 launches 4 N per launch 26214400 time=596.224ms
-in[10]15
 totalN 104857600 launches 8 N per launch 13107200 time=595.825ms
-in[10]15
 totalN 104857600 launches 16 N per launch 6553600 time=595.855ms
-in[10]15
 totalN 104857600 launches 32 N per launch 3276800 time=596.347ms
-in[10]15
 totalN 104857600 launches 64 N per launch 1638400 time=595.811ms
-in[10]15
 totalN 104857600 launches 128 N per launch 819200 time=596.306ms
-in[10]15
 totalN 104857600 launches 256 N per launch 409600 time=596.629ms
-in[10]15
 totalN 104857600 launches 512 N per launch 204800 time=596.734ms
-in[10]15
 totalN 104857600 launches 1024 N per launch 102400 time=596.638ms
-in[10]15
 totalN 104857600 launches 2048 N per launch 51200 time=596.381ms
-in[10]15
 totalN 104857600 launches 4096 N per launch 25600 time=602.276ms
-in[10]15
 totalN 104857600 launches 8192 N per launch 12800 time=625.183ms
-in[10]15
 totalN 104857600 launches 16384 N per launch 6400 time=671.119ms
-in[10]15
 totalN 104857600 launches 32768 N per launch 3200 time=761.812ms
-in[10]15
 totalN 104857600 launches 65536 N per launch 1600 time=969.61ms
-in[10]15
 totalN 104857600 launches 131072 N per launch 800 time=1296.07ms
-in[10]15
 totalN 104857600 launches 262144 N per launch 400 time=1961.9ms
 launch time = (969 -600)/65536 = 5 microseconds
 
@@ -95,44 +55,25 @@ W9100
 using gpu 0
 Using Advanced Micro Devices, Inc. platform: AMD Accelerated Parallel Processing
 Using device: Hawaii
-in[10]15
 totalN 104857600 launches 1 N per launch 104857600 time=268.76ms
-in[10]15
 totalN 104857600 launches 2 N per launch 52428800 time=188.257ms
-in[10]15
 totalN 104857600 launches 4 N per launch 26214400 time=241.316ms
-in[10]15
 totalN 104857600 launches 8 N per launch 13107200 time=211.662ms
-in[10]15
 totalN 104857600 launches 16 N per launch 6553600 time=202.007ms
-in[10]15
 totalN 104857600 launches 32 N per launch 3276800 time=234.788ms
-in[10]15
 totalN 104857600 launches 64 N per launch 1638400 time=223.674ms
-in[10]15
 totalN 104857600 launches 128 N per launch 819200 time=197.424ms
-in[10]15
 totalN 104857600 launches 256 N per launch 409600 time=210.223ms
-in[10]15
 totalN 104857600 launches 512 N per launch 204800 time=239.061ms
-in[10]15
 totalN 104857600 launches 1024 N per launch 102400 time=196.259ms
-in[10]15
 totalN 104857600 launches 2048 N per launch 51200 time=201.374ms
-in[10]15
 totalN 104857600 launches 4096 N per launch 25600 time=197.967ms
-in[10]15
 totalN 104857600 launches 8192 N per launch 12800 time=225.463ms
-in[10]15
 totalN 104857600 launches 16384 N per launch 6400 time=292.726ms
-in[10]15
 totalN 104857600 launches 32768 N per launch 3200 time=311.143ms
-in[10]15
 totalN 104857600 launches 65536 N per launch 1600 time=453.421ms
-in[10]15
 totalN 104857600 launches 131072 N per launch 800 time=700.54ms
-in[10]15
 totalN 104857600 launches 262144 N per launch 400 time=1211.22ms
 
-launch time ~= (453-200)/65536 = 3 microseconds :-P
+launch time ~= (453-200)/65536 = 3 microseconds
 

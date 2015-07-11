@@ -3,7 +3,7 @@ cltorch benchmarking, for evaluating where to focus optimization effort
 
 This is cltorch-specific for now, though if someone wants to make it more general, I'm happy to change the name, eg to `torch-benchmarking` :-)
 
-Current direction is to measure why char-rnn runs really slowly, on opencl, on certain devices.  Examples of things to check:
+Current direction is to measure why [char-rnn](https://github.com/karpathy/char-rnn) runs really slowly, on opencl, on certain devices.  Examples of things to check:
 - is it because of kernel launch time?
 - is it because of passing in structs?
 - is it because of passing in non-const structs?

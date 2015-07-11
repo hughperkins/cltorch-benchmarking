@@ -13,10 +13,10 @@ Current direction is to measure why char-rnn runs really slowly, on opencl, on c
 
 ## Contents
 
-* test_launch: measure kernel launch times, by adding 1 to a constant-sized array (about 100MB), and varying the number of kernel launches used
-* test_apply1: varies vector size, float vs float4.  varies operation used, ie `+` vs `-`, `exp`, etc
-* test_apply1b: varying operation, as test_apply1, but adds an additional temporary variable `out`
-* test_applystrided: (in progress) mix up the memory access a bit, and/or add an inner loop over dimensions (tbd)
+* [test_launch](test_launch.cpp): measure kernel launch times, by adding 1 to a constant-sized array (about 100MB), and varying the number of kernel launches used
+* [test_apply1](test_apply1.cpp): varies vector size, float vs float4.  varies operation used, ie `+` vs `-`, `exp`, etc
+* [test_apply1b](test_apply1b.cpp): varying operation, as test_apply1, but adds an additional temporary variable `out`
+* [test_applystrided](test_applystrided.cpp): (in progress) mix up the memory access a bit, and/or add an inner loop over dimensions (tbd)
 
 ## To build
 

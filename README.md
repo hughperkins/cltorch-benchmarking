@@ -18,3 +18,20 @@ Current direction is to measure why char-rnn runs really slowly, on opencl, on c
 * test_apply1b: varying operation, as test_apply1, but adds an additional temporary variable `out`
 * test_applystrided: (in progress) mix up the memory access a bit, and/or add an inner loop over dimensions (tbd)
 
+## To build
+
+*pre-requisites:*
+- [EasyCL](https://github.com/hughperkins/EasyCL) installed, using `make -j 4 install`, into ~/git/EasyCL/dist (ie install easycl, with a `CMAKE_INSTALL_PREFIX` of `[your home directory]/git/EasyCL/dist`
+- cmake and ccmake installed
+- gcc, g++ etc
+
+*method*
+```
+git clone https://github.com/hughperkins/cltorch-benchmarking.git
+cd cltorch-benchmarking
+mkdir build
+cd build
+cmake ..
+make -j 4
+```
+

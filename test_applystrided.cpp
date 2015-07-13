@@ -94,7 +94,7 @@ string boolToString(bool value) {
   return "false";
 }
 
-void test(EasyCL *cl, int numLaunches, int vectorSize, string operation = "+", bool transposed=false) {
+void test(EasyCL *cl, int numLaunches, int vectorSize, string operation = "+", bool transposed=false, int size1=32) {
   string arrayType = "float";
   if(vectorSize > 1) {
     arrayType += easycl::toString(vectorSize);
@@ -103,10 +103,10 @@ void test(EasyCL *cl, int numLaunches, int vectorSize, string operation = "+", b
 //  int numLaunches = 1;
   int N = totalN / numLaunches;
 
-  int size0 = N / 32;
-  int size1 = 32;
+  int size0 = N / size1;
+//  int size1 = 32;
 
-  int stride0 = 32;
+  int stride0 = size1;
   int stride1 = 1;
 
   string templatedSource = easycl::replaceGlobal(kernelSource, "float", arrayType);
@@ -115,7 +115,7 @@ void test(EasyCL *cl, int numLaunches, int vectorSize, string operation = "+", b
   templatedSource = easycl::replace(templatedSource, "{{stride1}}", easycl::toString(stride1));
   templatedSource = easycl::replace(templatedSource, "{{size1}}", easycl::toString(size1));
   templatedSource = easycl::replace(templatedSource, "{{transposed}}", boolToString(transposed));
-  cout << templatedSource << endl;
+//  cout << templatedSource << endl;
   CLKernel *kernel = cl->buildKernelFromString(templatedSource, "test", "");
   const int workgroupSize = 64;
   int numWorkgroups = (N / vectorSize + workgroupSize - 1) / workgroupSize;
@@ -142,7 +142,7 @@ void test(EasyCL *cl, int numLaunches, int vectorSize, string operation = "+", b
 //  cout << "in[10]" << in[10] << endl;
   double end = StatefulTimer::instance()->getSystemMilliseconds();
 //  cout << "Time, " << numLaunches << " launches: " << (end - start) << "ms" << endl;
-  cout << "launches " << numLaunches << " N per launch " << N << " vectorsize=" << vectorSize << " op=" << operation << " t=" << transposed << " time=" << (end - start) << "ms" << endl;
+  cout << "launches " << numLaunches << " N per launch " << N << " vectorsize=" << vectorSize << " op=" << operation << " t=" << transposed << " size1=" << size1 << " time=" << (end - start) << "ms" << endl;
 
   int errorCount = 0;
   if( operation == "out + 3.3f" ) {
@@ -169,8 +169,10 @@ void test(EasyCL *cl, int numLaunches, int vectorSize, string operation = "+", b
 }
 
 void testTranspose(EasyCL *cl) {
-  test(cl, 256, 4, "out + 3.3f", false);
-  test(cl, 256, 4, "out + 3.3f", true);
+  test(cl, 256, 4, "out + 3.3f", false, 32);
+  test(cl, 256, 4, "out + 3.3f", true, 32);
+  test(cl, 256, 4, "out + 3.3f", false, 128);
+  test(cl, 256, 4, "out + 3.3f", true, 128);
 }
 
 int main(int argc, char *argv[]) {

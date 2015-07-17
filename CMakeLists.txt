@@ -37,4 +37,5 @@ add_executable(test_launch test_launch.cpp)
 add_executable(test_apply1 test_apply1.cpp)
 add_executable(test_apply1b test_apply1b.cpp)
 add_executable(test_applystrided test_applystrided.cpp)
+add_executable(test_workgroupsize test_workgroupsize.cpp)
 

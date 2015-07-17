@@ -70,6 +70,20 @@ void test(EasyCL *cl, int numLaunches, int vectorSize, string operation = "+") {
 //    cout << "No errors detected" << endl;
   }
 
+  start = StatefulTimer::instance()->getSystemMilliseconds();
+  for( int i = 0; i < numLaunches; i++ ) {
+    kernel->in(N * i / vectorSize);
+    kernel->in(totalN / vectorSize);
+    kernel->inout(wrapper);
+    kernel->run_1d(numWorkgroups * workgroupSize, workgroupSize);
+  }
+  cl->finish();
+  end = StatefulTimer::instance()->getSystemMilliseconds();
+  wrapper->copyToHost();
+//  cout << "in[10]" << in[10] << endl;
+//  cout << "Time, " << numLaunches << " launches: " << (end - start) << "ms" << endl;
+  cout << "Run 2 launches " << numLaunches << " N per launch " << N << " vectorsize=" << vectorSize << " op=" << operation << " time=" << (end - start) << "ms" << endl;
+
   delete wrapper;
   delete[] in;
   delete[] inOut;

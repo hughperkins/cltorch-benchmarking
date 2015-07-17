@@ -46,9 +46,9 @@ void test(EasyCL *cl, int numLaunches, int vectorSize, string operation = "+") {
     kernel->run_1d(numWorkgroups * workgroupSize, workgroupSize);
   }
   cl->finish();
+  double end = StatefulTimer::instance()->getSystemMilliseconds();
   wrapper->copyToHost();
 //  cout << "in[10]" << in[10] << endl;
-  double end = StatefulTimer::instance()->getSystemMilliseconds();
 //  cout << "Time, " << numLaunches << " launches: " << (end - start) << "ms" << endl;
   cout << "launches " << numLaunches << " N per launch " << N << " vectorsize=" << vectorSize << " op=" << operation << " time=" << (end - start) << "ms" << endl;
 

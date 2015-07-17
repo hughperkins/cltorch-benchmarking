@@ -1,12 +1,14 @@
 cmake_minimum_required(VERSION 2.8)
 
+set(HOME $ENV{HOME})
+message("HOME ${HOME}")
 find_path(EASYCL_INCLUDE
     NAMES EasyCL.h
     PATHS
         /usr/include/easycl
         /usr/local/include/easycl
         /opt/EasyCL/include/easycl
-        /home/user/git/EasyCL/dist/include/easycl
+        ${HOME}/git/EasyCL/dist/include/easycl
     DOC "OpenCL header file path"
 )
 find_path(CLEW_INCLUDE
@@ -15,13 +17,13 @@ find_path(CLEW_INCLUDE
         /usr/include
         /usr/local/include
         /opt/EasyCL/include
-        /home/user/git/EasyCL/dist/include
+        ${HOME}/git/EasyCL/dist/include
     DOC "clew header file path"
 )
 find_library(
   EasyCL
   NAME EasyCL
-  PATHS /home/user/git/EasyCL/dist/lib
+  PATHS ${HOME}/git/EasyCL/dist/lib
   /opt/EasyCL/lib
   /usr/lib
   /usr/local/lib

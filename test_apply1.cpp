@@ -86,11 +86,17 @@ void testVectorSize(EasyCL *cl) {
 
 void testOperations(EasyCL *cl) {
   test(cl, 256, 4, "+");
+  cl->dumpProfiling();
   test(cl, 256, 4, "*");
+  cl->dumpProfiling();
   test(cl, 256, 4, "/");
+  cl->dumpProfiling();
   test(cl, 256, 1, "+");
+  cl->dumpProfiling();
   test(cl, 256, 1, "*");
+  cl->dumpProfiling();
   test(cl, 256, 1, "/");
+  cl->dumpProfiling();
 //  test(cl, 256, 1, "%");
 }
 
@@ -101,8 +107,10 @@ int main(int argc, char *argv[]) {
   }
   cout << "using gpu " << gpu << endl;
   EasyCL *cl = EasyCL::createForIndexedGpu(gpu);
+  cl->setProfiling(true);
 //  testVectorSize(cl);
   testOperations(cl);
+  cl->dumpProfiling();
   delete cl;
   return 0;
 }

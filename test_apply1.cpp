@@ -37,6 +37,7 @@ void test(EasyCL *cl, int numLaunches, int vectorSize, string operation = "+") {
   wrapper->copyToDevice();
 
   cl->finish();
+  cl->dumpProfiling();
 
   for(int it = 0; it < 3; it++) {
     double start = StatefulTimer::instance()->getSystemMilliseconds();

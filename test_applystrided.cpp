@@ -170,6 +170,8 @@ void testTranspose(EasyCL *cl) {
   test(cl, 1, true, 4);
   test(cl, 1, false, 32);
   test(cl, 1, true, 32);
+  test(cl, 1, false, 64);
+  test(cl, 1, true, 64);
   test(cl, 1, false, 128);
   test(cl, 1, true, 128);
 }

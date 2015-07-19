@@ -8,7 +8,7 @@ static const char *kernelSource = R"DELIM(
   kernel void test(int offset, int totalN, global float*out) {
     int linearId = get_global_id(0) + offset;
     if(linearId < totalN) {
-      out[linearId] = out[linearId] {{operation}} 3.3f;
+      out[linearId] = out[linearId] {{operation}} 2.0f;
     }
   }
 )DELIM";
@@ -38,51 +38,41 @@ void test(EasyCL *cl, int numLaunches, int vectorSize, string operation = "+") {
 
   cl->finish();
 
-  double start = StatefulTimer::instance()->getSystemMilliseconds();
-  for( int i = 0; i < numLaunches; i++ ) {
-    kernel->in(N * i / vectorSize);
-    kernel->in(totalN / vectorSize);
-    kernel->inout(wrapper);
-    kernel->run_1d(numWorkgroups * workgroupSize, workgroupSize);
-  }
-  cl->finish();
-  double end = StatefulTimer::instance()->getSystemMilliseconds();
-  wrapper->copyToHost();
-//  cout << "in[10]" << in[10] << endl;
-//  cout << "Time, " << numLaunches << " launches: " << (end - start) << "ms" << endl;
-  cout << "launches " << numLaunches << " N per launch " << N << " vectorsize=" << vectorSize << " op=" << operation << " time=" << (end - start) << "ms" << endl;
-
-  int errorCount = 0;
-  if( operation == "+" ) {
-    for( int i = 0; i < totalN; i++ ) {
-      if(inOut[i] != in[i] + 3.3f ) {
-        errorCount++;
-  //      if( errorCount < 20 ) {
-  //        cout << in[i] << " != " << (float)(i+4+1) << endl;
-  //      }
+  for(int it = 0; it < 3; it++) {
+    double start = StatefulTimer::instance()->getSystemMilliseconds();
+    for( int i = 0; i < numLaunches; i++ ) {
+      kernel->in(N * i / vectorSize);
+      kernel->in(totalN / vectorSize);
+      kernel->inout(wrapper);
+      kernel->run_1d(numWorkgroups * workgroupSize, workgroupSize);
+    }
+    cl->finish();
+    double end = StatefulTimer::instance()->getSystemMilliseconds();
+    cl->dumpProfiling();
+  //  cout << "in[10]" << in[10] << endl;
+  //  cout << "Time, " << numLaunches << " launches: " << (end - start) << "ms" << endl;
+    cout << "it=" << it << " launches " << numLaunches << " N per launch " << N << " vectorsize=" << vectorSize << " op=" << operation << " time=" << (end - start) << "ms" << endl;
+    wrapper->copyToHost();
+    cl->finish();
+    int errorCount = 0;
+    if( operation == "+" ) {
+      for( int i = 0; i < totalN; i++ ) {
+        float targetValue = in[i] + 2.0f * (it + 1);
+        if(inOut[i] != targetValue ) {
+          errorCount++;
+          if( errorCount < 20 ) {
+            cout << inOut[i] << " != " << targetValue << endl;
+          }
+        }
       }
     }
+  //  cout << endl;
+    if( errorCount > 0 ) {
+      cout << "errors: " << errorCount << " out of totalN=" << totalN << endl;
+    } else {
+  //    cout << "No errors detected" << endl;
+    }
   }
-//  cout << endl;
-  if( errorCount > 0 ) {
-    cout << "errors: " << errorCount << " out of totalN=" << totalN << endl;
-  } else {
-//    cout << "No errors detected" << endl;
-  }
-
-  start = StatefulTimer::instance()->getSystemMilliseconds();
-  for( int i = 0; i < numLaunches; i++ ) {
-    kernel->in(N * i / vectorSize);
-    kernel->in(totalN / vectorSize);
-    kernel->inout(wrapper);
-    kernel->run_1d(numWorkgroups * workgroupSize, workgroupSize);
-  }
-  cl->finish();
-  end = StatefulTimer::instance()->getSystemMilliseconds();
-  wrapper->copyToHost();
-//  cout << "in[10]" << in[10] << endl;
-//  cout << "Time, " << numLaunches << " launches: " << (end - start) << "ms" << endl;
-  cout << "Run 2 launches " << numLaunches << " N per launch " << N << " vectorsize=" << vectorSize << " op=" << operation << " time=" << (end - start) << "ms" << endl;
 
   delete wrapper;
   delete[] in;

@@ -8,7 +8,7 @@ static const char *kernelSource = R"DELIM(
   kernel void test(int offset, int totalN, global float*out) {
     int linearId = get_global_id(0) + offset;
     if(linearId < totalN) {
-      out[linearId] = out[linearId] {{operation}} 2.0f;
+      out[linearId] = out[linearId] {{operation}} 3.3f;
     }
   }
 )DELIM";
@@ -57,11 +57,12 @@ void test(EasyCL *cl, int numLaunches, int vectorSize, string operation = "+") {
     int errorCount = 0;
     if( operation == "+" ) {
       for( int i = 0; i < totalN; i++ ) {
-        float targetValue = in[i] + 2.0f * (it + 1);
-        if(inOut[i] != targetValue ) {
+        float targetValue = in[i] + 3.3f * (it + 1);
+        if(abs(inOut[i] - targetValue)> 0.1f) {
           errorCount++;
           if( errorCount < 20 ) {
             cout << inOut[i] << " != " << targetValue << endl;
+            cout << abs(inOut[i] - targetValue) << endl;
           }
         }
       }

@@ -69,20 +69,17 @@ using namespace std;
 static const char *kernelSource = R"DELIM(
   #define STRIDE0 {{stride0}}
   #define STRIDE1 {{stride1}}
+  #define SIZE0 {{size0}}
   #define SIZE1 {{size1}}
-  kernel void test(int offset, int totalN, global float*_out) {
-    int linearId = get_global_id(0) + offset;
+  kernel void test(int totalN, global float*_out) {
+    int linearId = get_global_id(0);
     if(linearId < totalN) {
       int x1 = linearId % SIZE1;
       int x0 = linearId / SIZE1;
       int storageOffset = 0;
-      if( {{transposed}} ) {
-        storageOffset = x0 * STRIDE1 + x1 * STRIDE0;
-      } else {
-        storageOffset = x0 * STRIDE0 + x1 * STRIDE1;
-      }
+      storageOffset = x0 * STRIDE0 + x1 * STRIDE1;
       float out = _out[storageOffset];
-      _out[storageOffset] = {{operation}};
+      _out[storageOffset] = out + 3.3f;
     }
   }
 )DELIM";
@@ -94,31 +91,32 @@ string boolToString(bool value) {
   return "false";
 }
 
-void test(EasyCL *cl, int numLaunches, int vectorSize, string operation = "+", bool transposed=false, int size1=32) {
+void test(EasyCL *cl, int vectorSize, bool transposed=false, int size1=32) {
   string arrayType = "float";
   if(vectorSize > 1) {
     arrayType += easycl::toString(vectorSize);
   }
   int totalN = 128 * 1024 * 1024;
-//  int numLaunches = 1;
-  int N = totalN / numLaunches;
 
-  int size0 = N / size1;
-//  int size1 = 32;
+  int size0 = totalN / size1;
 
   int stride0 = size1;
   int stride1 = 1;
 
   string templatedSource = easycl::replaceGlobal(kernelSource, "float", arrayType);
-  templatedSource = easycl::replace(templatedSource, "{{operation}}", operation);
-  templatedSource = easycl::replace(templatedSource, "{{stride0}}", easycl::toString(stride0));
-  templatedSource = easycl::replace(templatedSource, "{{stride1}}", easycl::toString(stride1));
-  templatedSource = easycl::replace(templatedSource, "{{size1}}", easycl::toString(size1));
-  templatedSource = easycl::replace(templatedSource, "{{transposed}}", boolToString(transposed));
-//  cout << templatedSource << endl;
+  if(transposed) {
+    templatedSource = easycl::replace(templatedSource, "{{stride0}}", easycl::toString(stride1));
+    templatedSource = easycl::replace(templatedSource, "{{stride1}}", easycl::toString(stride0));
+    templatedSource = easycl::replace(templatedSource, "{{size1}}", easycl::toString(size0));
+  } else {
+    templatedSource = easycl::replace(templatedSource, "{{stride0}}", easycl::toString(stride0));
+    templatedSource = easycl::replace(templatedSource, "{{stride1}}", easycl::toString(stride1));
+    templatedSource = easycl::replace(templatedSource, "{{size1}}", easycl::toString(size1));
+  }
+//  templatedSource = easycl::replace(templatedSource, "{{transposed}}", boolToString(transposed));
   CLKernel *kernel = cl->buildKernelFromString(templatedSource, "test", "");
   const int workgroupSize = 64;
-  int numWorkgroups = (N / vectorSize + workgroupSize - 1) / workgroupSize;
+  int numWorkgroups = (totalN / vectorSize + workgroupSize - 1) / workgroupSize;
 
   float *in = new float[totalN];
   float *inOut = new float[totalN];
@@ -129,29 +127,28 @@ void test(EasyCL *cl, int numLaunches, int vectorSize, string operation = "+", b
   wrapper->copyToDevice();
 
   cl->finish();
-
+  cl->dumpProfiling();
+  
   double start = StatefulTimer::instance()->getSystemMilliseconds();
-  for( int i = 0; i < numLaunches; i++ ) {
-    kernel->in(N * i / vectorSize);
-    kernel->in(totalN / vectorSize);
-    kernel->inout(wrapper);
-    kernel->run_1d(numWorkgroups * workgroupSize, workgroupSize);
-  }
+  kernel->in(totalN / vectorSize);
+  kernel->inout(wrapper);
+  kernel->run_1d(numWorkgroups * workgroupSize, workgroupSize);
+
   cl->finish();
-  wrapper->copyToHost();
-//  cout << "in[10]" << in[10] << endl;
   double end = StatefulTimer::instance()->getSystemMilliseconds();
+  cl->dumpProfiling();
+  wrapper->copyToHost();
+  cl->finish();
+//  cout << "in[10]" << in[10] << endl;
 //  cout << "Time, " << numLaunches << " launches: " << (end - start) << "ms" << endl;
-  cout << "launches " << numLaunches << " N per launch " << N << " vectorsize=" << vectorSize << " op=" << operation << " t=" << transposed << " size1=" << size1 << " time=" << (end - start) << "ms" << endl;
+  cout << "vectorsize=" << vectorSize << " t=" << transposed << " size1=" << size1 << " time=" << (end - start) << "ms" << endl;
 
   int errorCount = 0;
-  if( operation == "out + 3.3f" ) {
-    for( int i = 0; i < totalN; i++ ) {
-      if(inOut[i] != in[i] + 3.3f ) {
-        errorCount++;
-  //      if( errorCount < 20 ) {
-  //        cout << in[i] << " != " << (float)(i+4+1) << endl;
-  //      }
+  for( int i = 0; i < totalN; i++ ) {
+    if(inOut[i] != in[i] + 3.3f ) {
+      errorCount++;
+      if( errorCount < 20 ) {
+        cout << i << "=" << i << " " << (in[i] + 3.3f) << " != " << (float)(inOut[i]) << endl;
       }
     }
   }
@@ -169,10 +166,12 @@ void test(EasyCL *cl, int numLaunches, int vectorSize, string operation = "+", b
 }
 
 void testTranspose(EasyCL *cl) {
-  test(cl, 256, 4, "out + 3.3f", false, 32);
-  test(cl, 256, 4, "out + 3.3f", true, 32);
-  test(cl, 256, 4, "out + 3.3f", false, 128);
-  test(cl, 256, 4, "out + 3.3f", true, 128);
+  test(cl, 1, false, 4);
+  test(cl, 1, true, 4);
+  test(cl, 1, false, 32);
+  test(cl, 1, true, 32);
+  test(cl, 1, false, 128);
+  test(cl, 1, true, 128);
 }
 
 int main(int argc, char *argv[]) {
@@ -182,6 +181,7 @@ int main(int argc, char *argv[]) {
   }
   cout << "using gpu " << gpu << endl;
   EasyCL *cl = EasyCL::createForIndexedGpu(gpu);
+  cl->setProfiling(true);
 //  testVectorSize(cl);
   testTranspose(cl);
   delete cl;

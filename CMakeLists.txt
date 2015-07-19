@@ -40,3 +40,5 @@ add_executable(test_applystrided test_applystrided.cpp)
 add_executable(test_workgroupsize test_workgroupsize.cpp)
 add_executable(test_privatebuffer test_privatebuffer.cpp)
 
+add_executable(test_apply3 test_apply3.cpp)
+

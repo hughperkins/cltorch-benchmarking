@@ -1,14 +1,35 @@
 #include <iostream>
 using namespace std;
 #include "EasyCL.h"
+#include "CLKernel_structs.h"
 #include "util/StatefulTimer.h"
 #include "util/easycl_stringhelper.h"
 
+typedef struct Info {
+  int dims;
+  int offset;
+  int sizes[25];
+  int strides[25];
+} Info;
+
 static const char *kernelSource = R"DELIM(
-  kernel void test(int totalN, global float*out, global float *in1, global float *in2) {
+  typedef struct Info {
+    int dims;
+    int offset;
+    int sizes[25];
+    int strides[25];
+  } Info;
+
+  kernel void test(int totalN,
+      global struct Info *out_info,
+      global float*out_data,
+      global struct Info *in1_info,
+      global float *in1_data,
+      global struct Info *in2_info,
+      global float *in2_data) {
     int linearId = get_global_id(0);
     if(linearId < totalN) {
-      out[linearId] = in1[linearId] * in2[linearId];
+      out_data[linearId] = in1_data[linearId] * in2_data[linearId];
     }
   }
 )DELIM";
@@ -37,11 +58,22 @@ void test(EasyCL *cl, int its, int size) {
   cl->finish();
   cl->dumpProfiling();
 
+  Info outInfo;
+  Info in1Info;
+  Info in2Info;
+  outInfo.offset = in1Info.offset = in2Info.offset = 0;
+  outInfo.dims = in1Info.dims = in2Info.dims = 1;
+  outInfo.sizes[0] = in1Info.sizes[0] = in2Info.sizes[0] = 6400;
+  outInfo.strides[0] = in1Info.strides[0] = in2Info.strides[0] = 1;
+
   double start = StatefulTimer::instance()->getSystemMilliseconds();
   for(int it = 0; it < its; it++) {
     kernel->in(totalN);
+    kernel->in(1, &outInfo);
     kernel->out(outwrap);
+    kernel->in(1, &in1Info);
     kernel->in(in1wrap);
+    kernel->in(1, &in2Info);
     kernel->in(in2wrap);
     kernel->run_1d(numWorkgroups * workgroupSize, workgroupSize);
   }

@@ -28,6 +28,14 @@ find_library(
   /usr/lib
   /usr/local/lib
 )
+find_library(
+  clew
+  NAME clew
+  PATHS ${HOME}/git/EasyCL/dist/lib
+  /opt/EasyCL/lib
+  /usr/lib
+  /usr/local/lib
+)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 message("EasyCL ${EasyCL}")
 include_directories(${EASYCL_INCLUDE} ${CLEW_INCLUDE})
@@ -41,4 +49,8 @@ add_executable(test_workgroupsize test_workgroupsize.cpp)
 add_executable(test_privatebuffer test_privatebuffer.cpp)
 
 add_executable(test_apply3 test_apply3.cpp)
+add_executable(test_apply3_perclt test_apply3_perclt.cpp)
+
+#target_link_libraries(test_apply3_perclt dl)
+target_link_libraries(test_apply3_perclt ${clew})
 

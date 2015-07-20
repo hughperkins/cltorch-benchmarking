@@ -21,13 +21,14 @@ static const char *kernelSource = R"DELIM(
   } Info;
 
   kernel void test(int totalN,
-      global struct Info *out_info,
-      global struct Info *in1_info,
-      global struct Info *in2_info,
+      global struct Info *infos,
       global float*out_data,
       global float *in1_data,
       global float *in2_data
       ) {
+    global struct Info *out_info = &infos[0];
+    global struct Info *in1_info = &infos[1];
+    global struct Info *in2_info =  &infos[2];
     int linearId = get_global_id(0);
     if(linearId < totalN) {
       out_data[linearId] = in1_data[linearId] * in2_data[linearId];
@@ -56,23 +57,18 @@ void test(EasyCL *cl, int its, int size, bool reuseStructBuffers) {
   in2wrap->copyToDevice();
   outwrap->createOnDevice();
 
-  Info outInfo;
-  Info in1Info;
-  Info in2Info;
-  outInfo.offset = in1Info.offset = in2Info.offset = 0;
-  outInfo.dims = in1Info.dims = in2Info.dims = 1;
-  outInfo.sizes[0] = in1Info.sizes[0] = in2Info.sizes[0] = 6400;
-  outInfo.strides[0] = in1Info.strides[0] = in2Info.strides[0] = 1;
+  Info infos[3];
+  Info *outInfo = &infos[0];
+  Info *in1Info = &infos[1];
+  Info *in2Info = &infos[2];
+  outInfo->offset = in1Info->offset = in2Info->offset = 0;
+  outInfo->dims = in1Info->dims = in2Info->dims = 1;
+  outInfo->sizes[0] = in1Info->sizes[0] = in2Info->sizes[0] = 6400;
+  outInfo->strides[0] = in1Info->strides[0] = in2Info->strides[0] = 1;
 
-  float *outInfoFloat = reinterpret_cast<float *>(&outInfo);
-  float *in1InfoFloat = reinterpret_cast<float *>(&in1Info);
-  float *in2InfoFloat = reinterpret_cast<float *>(&in2Info);
-  CLWrapper *outInfoWrap = cl->wrap(64, outInfoFloat);
-  CLWrapper *in1InfoWrap = cl->wrap(64, in1InfoFloat);
-  CLWrapper *in2InfoWrap = cl->wrap(64, in2InfoFloat);
-  outInfoWrap->copyToDevice();
-  in1InfoWrap->copyToDevice();
-  in2InfoWrap->copyToDevice();
+  float *infosFloat = reinterpret_cast<float *>(&infos[0]);
+  CLWrapper *infosWrap = cl->wrap((sizeof(Info)*3 + sizeof(float)-1)/sizeof(float), infosFloat);
+  infosWrap->copyToDevice();
 
   cl->finish();
   cl->dumpProfiling();
@@ -82,13 +78,11 @@ void test(EasyCL *cl, int its, int size, bool reuseStructBuffers) {
     kernel->in(totalN);
 
     if(reuseStructBuffers) {
-      kernel->in(outInfoWrap);
-      kernel->in(in1InfoWrap);
-      kernel->in(in2InfoWrap);
+      infosWrap->copyToDevice();
+
+      kernel->in(infosWrap);
     } else {
-      kernel->in(1, &outInfo);
-      kernel->in(1, &in1Info);
-      kernel->in(1, &in2Info);
+      kernel->in(3, &infos[0]);
     }
 
     kernel->out(outwrap);

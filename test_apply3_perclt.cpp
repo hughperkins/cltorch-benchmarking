@@ -8,16 +8,16 @@ using namespace std;
 typedef struct Info {
   int dims;
   int offset;
-  int sizes[25];
-  int strides[25];
+  int sizes[5];
+  int strides[5];
 } Info;
 
 static const char *kernelSource = R"DELIM(
   typedef struct Info {
     int dims;
     int offset;
-    int sizes[25];
-    int strides[25];
+    int sizes[5];
+    int strides[5];
   } Info;
 
   kernel void test(int totalN,
@@ -70,6 +70,47 @@ void test(EasyCL *cl, int its, int size, bool reuseStructBuffers) {
   CLWrapper *infosWrap = cl->wrap((sizeof(Info)*3 + sizeof(float)-1)/sizeof(float), infosFloat);
   infosWrap->copyToDevice();
 
+  Info infosb[3];
+  Info *outInfob = &infosb[0];
+  Info *in1Infob = &infosb[1];
+  Info *in2Infob = &infosb[2];
+  outInfob->offset = in1Infob->offset = in2Infob->offset = 0;
+  outInfob->dims = in1Infob->dims = in2Infob->dims = 1;
+  outInfob->sizes[0] = in1Infob->sizes[0] = in2Infob->sizes[0] = 6400;
+  outInfob->strides[0] = in1Infob->strides[0] = in2Infob->strides[0] = 1;
+
+  float *infosFloatb = reinterpret_cast<float *>(&infosb[0]);
+  CLWrapper *infosWrapb = cl->wrap((sizeof(Info)*3 + sizeof(float)-1)/sizeof(float), infosFloatb);
+  infosWrapb->copyToDevice();
+
+  typedef struct InfosStruct {
+      Info infos[3];
+      CLWrapper *wrapper;
+  } InfosStruct;
+
+  vector< InfosStruct* > infosStore;
+  InfosStruct *is = 0;
+  for( int i = 0; i < 20; i++ ) { // add some dummy ones, to pretend we are running char-rnn
+    InfosStruct *infosStruct = new InfosStruct();
+    is = infosStruct;
+    for( int i = 0; i < 3; i++ ) {
+      is->infos[i].offset = 0;
+      is->infos[i].dims = 1;
+      is->infos[i].sizes[0] = 6400;
+      is->infos[i].strides[0] = 2; // just this last value will be different :-)
+    }
+    infosStruct->wrapper = cl->wrap((sizeof(Info)*3 + sizeof(float)-1)/sizeof(float), reinterpret_cast< float *>(&infosStruct->infos[0]));
+    infosStruct->wrapper->copyToDevice();
+    infosStore.push_back(infosStruct);
+  }
+  is = infosStore[19];
+  for( int i = 0; i < 3; i++ ) {
+    is->infos[i].offset = 0;
+    is->infos[i].dims = 1;
+    is->infos[i].sizes[0] = 6400;
+    is->infos[i].strides[0] = 1;
+  }
+
   cl->finish();
   cl->dumpProfiling();
 
@@ -77,13 +118,38 @@ void test(EasyCL *cl, int its, int size, bool reuseStructBuffers) {
   for(int it = 0; it < its; it++) {
     kernel->in(totalN);
 
-    if(reuseStructBuffers) {
-      infosWrap->copyToDevice();
-
-      kernel->in(infosWrap);
-    } else {
-      kernel->in(3, &infos[0]);
+    is = 0;
+    for( int i = 0; i < (int)infosStore.size(); i++ ) {
+      InfosStruct *tis = infosStore[i];
+      bool possiblematch = true;
+      for( int i = 0; i < 3; i++ ) {
+        if(tis->infos[i].offset != 0) {
+          possiblematch = false;
+          break;
+        }
+        if(tis->infos[i].dims != 1) {
+          possiblematch = false;
+          break;
+        }
+        if(tis->infos[i].sizes[0] != 6400) {
+          possiblematch = false;
+          break;
+        }
+        if(tis->infos[i].strides[0] != 1) {
+          possiblematch = false;
+          break;
+        }
+      }
+      if(possiblematch) {
+        is = tis;
+        break;
+      }
     }
+    if(is == 0) {
+      cout << "no mathcin is found" << endl;
+    }
+
+    kernel->in(is->wrapper);
 
     kernel->out(outwrap);
     kernel->in(in1wrap);
@@ -131,9 +197,7 @@ int main(int argc, char *argv[]) {
   cout << "using gpu " << gpu << endl;
   EasyCL *cl = EasyCL::createForIndexedGpu(gpu);
   cl->setProfiling(true);
-  test(cl, 900, 6400, false);
   test(cl, 900, 6400, true);
-  test(cl, 9000, 6400, false);
   test(cl, 9000, 6400, true);
   cl->dumpProfiling();
   delete cl;

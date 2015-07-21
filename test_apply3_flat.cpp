@@ -41,8 +41,8 @@ void test(EasyCL *cl, int its, int size, int numVirtualDims) {
   int totalN = size;
   TemplatedKernel kernelBuilder(cl);
   kernelBuilder.set("numVirtualDims", numVirtualDims);
-  cout << kernelBuilder.getRenderedKernel(kernelSource) << endl;
-  CLKernel *kernel = kernelBuilder.buildKernel( "apply3flat", "apply3flat", kernelSource, "test" );
+//  cout << kernelBuilder.getRenderedKernel(kernelSource) << endl;
+  CLKernel *kernel = kernelBuilder.buildKernel( "apply3flat_" + easycl::toString(numVirtualDims), "apply3flat", kernelSource, "test" );
 
   const int workgroupSize = 64;
   int numWorkgroups = (totalN + workgroupSize - 1) / workgroupSize;
@@ -121,7 +121,7 @@ void test(EasyCL *cl, int its, int size, int numVirtualDims) {
   delete[] in1;
   delete[] in2;
   delete[] out;
-  delete kernel;
+//  delete kernel;
 }
 
 int main(int argc, char *argv[]) {

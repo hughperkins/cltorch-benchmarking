@@ -4,29 +4,30 @@ using namespace std;
 #include "CLKernel_structs.h"
 #include "util/StatefulTimer.h"
 #include "util/easycl_stringhelper.h"
+#include "templates/TemplatedKernel.h"
 
 static const char *kernelSource = R"DELIM(
   kernel void test(int totalN,
       int out_offset,
       int out_dims,
-      int out_dim0,
-      int out_dim1,
-      int out_stride0,
-      int out_stride1,
+      {% for i=1,numVirtualDims do %}
+      int out_dim{{i}},
+      int out_stride{{i}},
+      {% end %}
       global float*out_data,
       int in1_offset,
       int in1_dims,
-      int in1_dim0,
-      int in1_dim1,
-      int in1_stride0,
-      int in1_stride1,
+      {% for i=1,numVirtualDims do %}
+      int in1_dim{{i}},
+      int in1_stride{{i}},
+      {% end %}
       global float *in1_data,
       int in2_offset,
       int in2_dims,
-      int in2_dim0,
-      int in2_dim1,
-      int in2_stride0,
-      int in2_stride1,
+      {% for i=1,numVirtualDims do %}
+      int in2_dim{{i}},
+      int in2_stride{{i}},
+      {% end %}
       global float *in2_data
       ) {
     int linearId = get_global_id(0);
@@ -36,10 +37,13 @@ static const char *kernelSource = R"DELIM(
   }
 )DELIM";
 
-void test(EasyCL *cl, int its, int size, bool reuseStructBuffers) {
+void test(EasyCL *cl, int its, int size, int numVirtualDims) {
   int totalN = size;
-  string templatedSource = kernelSource;
-  CLKernel *kernel = cl->buildKernelFromString(templatedSource, "test", "");
+  TemplatedKernel kernelBuilder(cl);
+  kernelBuilder.set("numVirtualDims", numVirtualDims);
+  cout << kernelBuilder.getRenderedKernel(kernelSource) << endl;
+  CLKernel *kernel = kernelBuilder.buildKernel( "apply3flat", "apply3flat", kernelSource, "test" );
+
   const int workgroupSize = 64;
   int numWorkgroups = (totalN + workgroupSize - 1) / workgroupSize;
 
@@ -66,24 +70,24 @@ void test(EasyCL *cl, int its, int size, bool reuseStructBuffers) {
 
     kernel->in(0);
     kernel->in(2);
-    kernel->in(2);
-    kernel->in(2);
-    kernel->in(2);
-    kernel->in(2);
+    for(int i = 0; i < numVirtualDims; i++ ) {
+      kernel->in(2);
+      kernel->in(2);
+    }
     kernel->out(outwrap);
     kernel->in(0);
     kernel->in(2);
-    kernel->in(2);
-    kernel->in(2);
-    kernel->in(2);
-    kernel->in(2);
+    for(int i = 0; i < numVirtualDims; i++ ) {
+      kernel->in(2);
+      kernel->in(2);
+    }
     kernel->in(in1wrap);
     kernel->in(0);
     kernel->in(2);
-    kernel->in(2);
-    kernel->in(2);
-    kernel->in(2);
-    kernel->in(2);
+    for(int i = 0; i < numVirtualDims; i++ ) {
+      kernel->in(2);
+      kernel->in(2);
+    }
     kernel->in(in2wrap);
 
     kernel->run_1d(numWorkgroups * workgroupSize, workgroupSize);
@@ -91,7 +95,7 @@ void test(EasyCL *cl, int its, int size, bool reuseStructBuffers) {
   cl->finish();
   double end = StatefulTimer::instance()->getSystemMilliseconds();
   cl->dumpProfiling();
-  cout << "its=" << its << " size=" << size << " reusestructbuffers=" << reuseStructBuffers << " time=" << (end - start) << "ms" << endl;
+  cout << "its=" << its << " size=" << size << " numVirtualDimensions=" << numVirtualDims << " time=" << (end - start) << "ms" << endl;
   outwrap->copyToHost();
   cl->finish();
   int errorCount = 0;
@@ -128,8 +132,12 @@ int main(int argc, char *argv[]) {
   cout << "using gpu " << gpu << endl;
   EasyCL *cl = EasyCL::createForIndexedGpu(gpu);
   cl->setProfiling(true);
-  test(cl, 900, 6400, true);
-  test(cl, 9000, 6400, true);
+  test(cl, 900, 6400, 1);
+  test(cl, 900, 6400, 2);
+  test(cl, 900, 6400, 4);
+  test(cl, 900, 6400, 5);
+  test(cl, 900, 6400, 10);
+//  test(cl, 9000, 6400, 2);
   cl->dumpProfiling();
   delete cl;
   return 0;

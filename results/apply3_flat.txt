@@ -1,0 +1,13 @@
+AMD:
+apply3flat.test 2.3074ms
+its=900 size=6400 numVirtualDimensions=1 time=9.33203ms
+apply3flat.test 2.1394ms
+its=900 size=6400 numVirtualDimensions=2 time=8.63086ms
+apply3flat.test 3.41986ms
+its=900 size=6400 numVirtualDimensions=4 time=10.2749ms
+apply3flat.test 2.95734ms
+its=900 size=6400 numVirtualDimensions=5 time=10.199ms
+apply3flat.test 3.4086ms
+its=900 size=6400 numVirtualDimensions=10 time=10.7532ms
+
+

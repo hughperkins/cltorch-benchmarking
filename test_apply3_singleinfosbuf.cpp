@@ -60,7 +60,8 @@ void test(EasyCL *cl, int its, int size, bool reuseStructBuffers) {
   in2wrap->copyToDevice();
   outwrap->createOnDevice();
 
-  Info infos[3];
+  #define MAX_INFOS 128
+  Info infos[MAX_INFOS];
   Info *outInfo = &infos[0];
   Info *in1Info = &infos[1];
   Info *in2Info = &infos[2];

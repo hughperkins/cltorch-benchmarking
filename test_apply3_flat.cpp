@@ -137,6 +137,10 @@ int main(int argc, char *argv[]) {
   test(cl, 900, 6400, 4);
   test(cl, 900, 6400, 5);
   test(cl, 900, 6400, 10);
+  test(cl, 900, 6400, 15);
+  test(cl, 900, 6400, 16);
+  test(cl, 900, 6400, 20);
+  test(cl, 900, 6400, 25);
 //  test(cl, 9000, 6400, 2);
   cl->dumpProfiling();
   delete cl;

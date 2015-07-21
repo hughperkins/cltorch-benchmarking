@@ -50,7 +50,9 @@ add_executable(test_privatebuffer test_privatebuffer.cpp)
 
 add_executable(test_apply3 test_apply3.cpp)
 add_executable(test_apply3_perclt test_apply3_perclt.cpp)
+add_executable(test_apply3_flat test_apply3_flat.cpp)
 
 #target_link_libraries(test_apply3_perclt dl)
 target_link_libraries(test_apply3_perclt ${clew})
+target_link_libraries(test_apply3_flat ${clew})
 

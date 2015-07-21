@@ -90,7 +90,7 @@ void test(EasyCL *cl, int its, int size, bool reuseStructBuffers) {
 
   vector< InfosStruct* > infosStore;
   InfosStruct *is = 0;
-  for( int i = 0; i < 20; i++ ) { // add some dummy ones, to pretend we are running char-rnn
+  for( int i = 0; i < 60; i++ ) { // add some dummy ones, to pretend we are running char-rnn
     InfosStruct *infosStruct = new InfosStruct();
     is = infosStruct;
     for( int i = 0; i < 3; i++ ) {
@@ -103,7 +103,7 @@ void test(EasyCL *cl, int its, int size, bool reuseStructBuffers) {
     infosStruct->wrapper->copyToDevice();
     infosStore.push_back(infosStruct);
   }
-  is = infosStore[19];
+  is = infosStore[59];
   for( int i = 0; i < 3; i++ ) {
     is->infos[i].offset = 0;
     is->infos[i].dims = 1;

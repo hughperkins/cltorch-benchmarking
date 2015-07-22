@@ -33,7 +33,7 @@ static const char *kernelSource = R"DELIM(
     int linearId = get_global_id(0);
     if(linearId < totalN) {
       out_data[linearId + out_offset] = in1_data[linearId + in1_offset] * in2_data[linearId + in2_offset]
-      {% for i=1,numVirtualDims do %}
+      {% for i=1,numVirtualDims do %}  -- this is juts to make sure they'r enot being optimized out
       + out_dim{{i}}
       + out_stride{{i}}
       + in1_dim{{i}}

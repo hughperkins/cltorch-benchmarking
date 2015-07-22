@@ -31,7 +31,7 @@ static const char *kernelSource = R"DELIM(
     global struct Info *in2_info =  &infos[2];
     int linearId = get_global_id(0);
     if(linearId < totalN) {
-      out_data[linearId] = in1_data[linearId] * in2_data[linearId];
+      out_data[linearId + out_info->offset] = in1_data[linearId + in1_info->offset] * in2_data[linearId + in2_info->offset];
     }
   }
 )DELIM";

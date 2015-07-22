@@ -32,7 +32,16 @@ static const char *kernelSource = R"DELIM(
       ) {
     int linearId = get_global_id(0);
     if(linearId < totalN) {
-      out_data[linearId] = in1_data[linearId] * in2_data[linearId];
+      out_data[linearId + out_offset] = in1_data[linearId + in1_offset] * in2_data[linearId + in2_offset]
+      {% for i=1,numVirtualDims do %}
+      + out_dim{{i}}
+      + out_stride{{i}}
+      + in1_dim{{i}}
+      + in1_stride{{i}}
+      + in2_dim{{i}}
+      + in2_stride{{i}}
+      {% end %}
+      ;
     }
   }
 )DELIM";
@@ -98,6 +107,7 @@ void test(EasyCL *cl, int its, int size, int numVirtualDims) {
   cout << "its=" << its << " size=" << size << " numVirtualDimensions=" << numVirtualDims << " time=" << (end - start) << "ms" << endl;
   outwrap->copyToHost();
   cl->finish();
+  if(false){
   int errorCount = 0;
   for( int i = 0; i < totalN; i++ ) {
     float targetValue = in1[i] * in2[i];
@@ -113,6 +123,7 @@ void test(EasyCL *cl, int its, int size, int numVirtualDims) {
   if( errorCount > 0 ) {
     cout << "errors: " << errorCount << " out of totalN=" << totalN << endl;
   } else {
+  }
   }
 
   delete outwrap;
@@ -132,16 +143,19 @@ int main(int argc, char *argv[]) {
   cout << "using gpu " << gpu << endl;
   EasyCL *cl = EasyCL::createForIndexedGpu(gpu);
   cl->setProfiling(true);
-  test(cl, 900, 6400, 1);
-  test(cl, 900, 6400, 2);
-  test(cl, 900, 6400, 4);
-  test(cl, 900, 6400, 5);
-  test(cl, 900, 6400, 10);
-  test(cl, 900, 6400, 15);
-  test(cl, 900, 6400, 16);
-  test(cl, 900, 6400, 20);
-  test(cl, 900, 6400, 25);
+  for(int it = 0; it < 1; it++ ) {
+    int its = it == 1 ? 9000 : 900;
+    test(cl, its, 6400, 1);
+    test(cl, its, 6400, 2);
+    test(cl, its, 6400, 4);
+    test(cl, its, 6400, 5);
+    test(cl, its, 6400, 10);
+    test(cl, its, 6400, 15);
+    test(cl, its, 6400, 16);
+    test(cl, its, 6400, 20);
+    test(cl, its, 6400, 25);
 //  test(cl, 9000, 6400, 2);
+  }
   cl->dumpProfiling();
   delete cl;
   return 0;

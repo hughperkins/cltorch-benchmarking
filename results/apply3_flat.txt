@@ -10,4 +10,23 @@ its=900 size=6400 numVirtualDimensions=5 time=10.199ms
 apply3flat.test 3.4086ms
 its=900 size=6400 numVirtualDimensions=10 time=10.7532ms
 
+Using device: Hawaii
+apply3flat.test 2.10725ms
+its=900 size=6400 numVirtualDimensions=1 time=7.94092ms
+apply3flat.test 2.36325ms
+its=900 size=6400 numVirtualDimensions=2 time=9.31592ms
+apply3flat.test 2.30398ms
+its=900 size=6400 numVirtualDimensions=4 time=8.25195ms
+apply3flat.test 2.51051ms
+its=900 size=6400 numVirtualDimensions=5 time=8.36597ms
+apply3flat.test 2.72178ms
+its=900 size=6400 numVirtualDimensions=10 time=11.3892ms
+apply3flat.test 2.62727ms
+its=900 size=6400 numVirtualDimensions=15 time=9.18286ms
+apply3flat.test 2.77379ms
+its=900 size=6400 numVirtualDimensions=16 time=9.93408ms
+apply3flat.test 5.99363ms
+its=900 size=6400 numVirtualDimensions=20 time=15.771ms
+apply3flat.test 4.648ms
+its=900 size=6400 numVirtualDimensions=25 time=16.5479ms
 
